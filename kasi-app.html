@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KASI">
+<meta name="theme-color" content="#2F352B">
+<title>KASI App</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Jost', sans-serif; background: #F6F3EE; color: #2F352B; max-width: 430px; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
+
+/* APP SHELL */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.screen { flex: 1; padding-bottom: 70px; display: none; background: #F6F3EE; }
+.screen.active { display: block; }
+
+/* BOTTOM NAV */
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: #FDFCFA; border-top: 1px solid #EDE8E0; padding: 8px 0 max(10px, env(safe-area-inset-bottom)); display: flex; justify-content: space-around; z-index: 100; box-shadow: 0 -2px 20px rgba(0,0,0,0.06); }
+.nav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 12px; border: none; background: none; }
+.nav-btn .nav-icon { font-size: 20px; }
+.nav-btn p { font-size: 9px; letter-spacing: 0.5px; color: #C8BFB2; font-family: 'Jost', sans-serif; }
+.nav-btn.active p { color: #C47A5A; }
+.nav-btn.active .nav-icon { transform: scale(1.1); }
+
+/* HEADERS */
+.screen-header { padding: 52px 20px 20px; }
+.screen-header.dark { background: #2F352B; }
+.screen-header.terracotta { background: #C47A5A; }
+.screen-header.green { background: #697259; }
+.screen-header.purple { background: #5C4E7A; }
+.screen-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: #F6F3EE; margin-bottom: 2px; }
+.screen-header p { font-size: 12px; color: rgba(255,255,255,0.55); }
+.screen-header .greeting { font-size: 12px; color: #697259; margin-bottom: 2px; }
+.header-badge { display: inline-block; background: rgba(255,255,255,0.15); color: white; font-size: 10px; padding: 4px 12px; border-radius: 12px; margin-top: 8px; }
+
+/* CONTENT */
+.content { padding: 16px 20px; }
+.section-label { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: #A89B82; margin: 16px 0 8px; display: block; }
+.section-label:first-child { margin-top: 0; }
+
+/* CARDS */
+.card { background: #FDFCFA; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.card-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; color: #2F352B; margin-bottom: 4px; }
+
+/* TASKS */
+.task-item { background: #FDFCFA; border-radius: 10px; padding: 12px 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+.task-item:active { transform: scale(0.98); }
+.task-cb { width: 22px; height: 22px; border: 2px solid #C8BFB2; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.task-cb.done { background: #697259; border-color: #697259; }
+.task-cb.done::after { content: '✓'; color: white; font-size: 12px; }
+.task-info { flex: 1; }
+.task-info p { font-size: 13px; color: #2F352B; font-weight: 500; transition: all 0.2s; }
+.task-info p.done { text-decoration: line-through; color: #A89B82; }
+.task-info span { font-size: 10px; color: #A89B82; }
+.task-cat { font-size: 10px; background: #EDE8E0; color: #888; padding: 2px 8px; border-radius: 8px; }
+
+/* ADD TASK */
+.add-task-row { background: #F6F3EE; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; border: 1.5px dashed #C8BFB2; cursor: pointer; margin-bottom: 6px; }
+.add-task-row span { font-size: 20px; color: #C47A5A; }
+.add-task-row p { font-size: 12px; color: #A89B82; }
+
+/* CITATION */
+.cit-card { background: linear-gradient(135deg, #5C4E7A, #7A6A9A); border-radius: 14px; padding: 20px 18px; position: relative; overflow: hidden; margin-bottom: 8px; }
+.cit-card::before { content: '"'; position: absolute; top: -10px; left: 12px; font-family: 'Cormorant Garamond', serif; font-size: 90px; color: rgba(255,255,255,0.12); line-height: 1; }
+.cit-card p { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; color: white; line-height: 1.6; position: relative; margin-bottom: 8px; }
+.cit-card .cit-author { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; }
+.cit-nav { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.cit-dot { width: 6px; height: 6px; border-radius: 50%; background: #D1C5B3; cursor: pointer; transition: all 0.2s; }
+.cit-dot.active { background: #5C4E7A; width: 18px; border-radius: 3px; }
+
+/* ROUTINE TABS */
+.routine-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.r-tab { flex: 1; text-align: center; padding: 8px 6px; border-radius: 10px; font-size: 11px; font-weight: 500; cursor: pointer; border: none; font-family: 'Jost', sans-serif; transition: all 0.2s; }
+.r-tab.active { background: #C47A5A; color: white; }
+.r-tab.inactive { background: #F6F3EE; color: #888; }
+
+/* PROGRESS */
+.prog-bar-wrap { background: #F6F3EE; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.prog-bar { flex: 1; height: 6px; background: #EDE8E0; border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, #C47A5A, #D4936C); border-radius: 3px; transition: width 0.5s ease; }
+.prog-text { font-size: 11px; color: #C47A5A; font-weight: 600; white-space: nowrap; }
+.prog-time { font-size: 10px; color: #A89B82; white-space: nowrap; }
+
+/* SCORE */
+.score-card { background: #2F352B; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+.score-num { font-family: 'Cormorant Garamond', serif; font-size: 40px; color: #C47A5A; font-weight: 600; line-height: 1; }
+.score-card p { font-size: 12px; color: #D1C5B3; line-height: 1.6; }
+.score-card strong { color: #F6F3EE; }
+
+/* MÉMOS */
+.aff-card { background: #F6F3EE; border-radius: 12px; padding: 14px 16px; border-left: 4px solid #5C4E7A; margin-bottom: 8px; }
+.aff-card h4 { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #5C4E7A; margin-bottom: 6px; }
+.aff-card p { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: #2F352B; line-height: 1.6; }
+
+.intent-card { background: #FDFCFA; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.intent-card h4 { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #A89B82; margin-bottom: 10px; }
+.intent-input { border: none; border-bottom: 1.5px solid #C8BFB2; background: transparent; width: 100%; font-family: 'Jost', sans-serif; font-size: 13px; color: #2F352B; padding: 4px 0; outline: none; margin-bottom: 8px; }
+.intent-input::placeholder { color: #C8BFB2; }
+
+.grat-card { background: #FDFCFA; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.grat-card h4 { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #A89B82; margin-bottom: 10px; }
+.grat-item { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.grat-num { width: 22px; height: 22px; border-radius: 50%; background: #5C4E7A; color: white; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.grat-input { flex: 1; border: none; border-bottom: 1.5px solid #C8BFB2; background: transparent; font-family: 'Jost', sans-serif; font-size: 13px; color: #2F352B; padding: 4px 0; outline: none; }
+.grat-input::placeholder { color: #C8BFB2; }
+
+.mood-card { background: #2F352B; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.mood-card h4 { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #697259; margin-bottom: 12px; }
+.moods { display: flex; justify-content: space-around; }
+.mood-btn { text-align: center; cursor: pointer; padding: 6px; border-radius: 10px; border: none; background: transparent; transition: all 0.2s; }
+.mood-btn span { font-size: 26px; display: block; }
+.mood-btn p { font-size: 9px; color: rgba(255,255,255,0.35); margin-top: 4px; font-family: 'Jost', sans-serif; }
+.mood-btn.selected { background: rgba(255,255,255,0.1); }
+.mood-btn.selected p { color: #C47A5A; }
+
+/* SELF CARE */
+.selfcats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.scat { border-radius: 14px; padding: 16px 12px; text-align: center; cursor: pointer; transition: all 0.2s; border: none; }
+.scat:active { transform: scale(0.96); }
+.scat.t { background: linear-gradient(135deg, #C47A5A, #A8624A); }
+.scat.g { background: linear-gradient(135deg, #697259, #526048); }
+.scat.p { background: linear-gradient(135deg, #5C4E7A, #4A3E66); }
+.scat.tp { background: linear-gradient(135deg, #A89B82, #8A7D65); }
+.scat span { font-size: 28px; display: block; margin-bottom: 6px; }
+.scat h4 { font-size: 12px; font-weight: 600; color: white; margin-bottom: 2px; }
+.scat p { font-size: 10px; color: rgba(255,255,255,0.7); }
+
+.streak-card { background: linear-gradient(135deg, #C47A5A, #A8624A); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.str-num { font-family: 'Cormorant Garamond', serif; font-size: 44px; color: white; font-weight: 600; line-height: 1; }
+.streak-card p { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.6; }
+.streak-card strong { color: white; }
+
+.sug-item { background: #F6F3EE; border-radius: 10px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; }
+.sug-item:active { transform: scale(0.98); }
+.sug-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.sug-icon.o { background: #FAEAE0; }
+.sug-icon.g { background: #E8F0E0; }
+.sug-icon.p { background: #EDE8F5; }
+.sug-icon.b { background: #E0EAF8; }
+.sug-item h4 { font-size: 13px; font-weight: 600; color: #2F352B; margin-bottom: 1px; }
+.sug-item p { font-size: 11px; color: #888; }
+.sug-dur { font-size: 10px; color: #C47A5A; margin-left: auto; white-space: nowrap; font-weight: 600; }
+
+/* TOAST */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #2F352B; color: #F6F3EE; padding: 10px 20px; border-radius: 20px; font-size: 12px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; }
+.modal-overlay.show { display: flex; }
+.modal { background: #FDFCFA; border-radius: 20px 20px 0 0; padding: 20px; width: 100%; max-width: 430px; margin: 0 auto; }
+.modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; margin-bottom: 14px; color: #2F352B; }
+.modal input { width: 100%; border: 1.5px solid #EDE8E0; border-radius: 10px; padding: 12px 14px; font-family: 'Jost', sans-serif; font-size: 14px; color: #2F352B; outline: none; margin-bottom: 10px; }
+.modal input:focus { border-color: #C47A5A; }
+.modal-btns { display: flex; gap: 8px; }
+.btn-cancel { flex: 1; padding: 12px; border: 1.5px solid #EDE8E0; border-radius: 10px; background: white; font-family: 'Jost', sans-serif; font-size: 13px; color: #888; cursor: pointer; }
+.btn-add { flex: 2; padding: 12px; background: #C47A5A; border: none; border-radius: 10px; font-family: 'Jost', sans-serif; font-size: 13px; color: white; font-weight: 600; cursor: pointer; }
+
+/* SAVE BTN */
+.save-btn { width: 100%; padding: 14px; background: #697259; border: none; border-radius: 12px; font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: white; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
+.save-btn:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ===== ÉCRAN ACCUEIL ===== -->
+<div class="screen active" id="screen-home">
+  <div class="screen-header dark">
+    <p class="greeting">Bonjour</p>
+    <h1 id="home-name">Aminata</h1>
+    <p id="home-date"></p>
+    <div class="header-badge" id="home-badge">Chargement...</div>
+  </div>
+  <div class="content">
+    <span class="section-label">Tâches du jour</span>
+    <div id="work-reminder" style="display:none;"></div>
+    <div id="home-tasks"></div>
+    <span class="section-label">Citation du jour</span>
+    <div class="cit-card">
+      <p id="home-citation"></p>
+      <span class="cit-author">KASI · Pensée du jour</span>
+    </div>
+    <span class="section-label">Ce soir — pour toi</span>
+    <div class="card">
+      <p style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:15px; color:#697259; line-height:1.6;">"Prends soin de toi aujourd'hui.<br>Tu le mérites vraiment." 🌿</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ÉCRAN ROUTINES ===== -->
+<div class="screen" id="screen-routines">
+  <div class="screen-header terracotta">
+    <h1>Mes routines</h1>
+    <p>Personnalise · Coche · Progresse</p>
+  </div>
+  <div class="content">
+    <div class="routine-tabs">
+      <button class="r-tab active" onclick="switchRoutine('matin', this)">Matin</button>
+      <button class="r-tab inactive" onclick="switchRoutine('soir', this)">Soir</button>
+      <button class="r-tab inactive" onclick="switchRoutine('weekend', this)">Week-end</button>
+    </div>
+    <div class="prog-bar-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+      <span class="prog-text" id="prog-text">0/0</span>
+      <span class="prog-time" id="prog-time"></span>
+    </div>
+    <div id="routine-tasks"></div>
+    <div class="add-task-row" onclick="openAddTask()">
+      <span>+</span>
+      <p>Ajouter une tâche personnalisée...</p>
+    </div>
+    <button onclick="resetRoutine()" style="width:100%; padding:10px; background:none; border:1.5px solid #EDE8E0; border-radius:10px; font-family:'Jost',sans-serif; font-size:11px; color:#A89B82; cursor:pointer; margin-bottom:8px; letter-spacing:1px;">↺ Réinitialiser la routine par défaut</button>
+    <div class="score-card">
+      <div class="score-num" id="score-num">0%</div>
+      <p id="score-msg">Commence ta routine du jour</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ÉCRAN MÉMOS ===== -->
+<div class="screen" id="screen-memos">
+  <div class="screen-header purple">
+    <h1>Mon espace intérieur</h1>
+    <p>Citations · Gratitude · Bilan</p>
+  </div>
+  <div class="content">
+    <span class="section-label">Citation du jour</span>
+    <div class="cit-card">
+      <p id="memo-citation"></p>
+      <span class="cit-author">KASI · Pensée du jour</span>
+      <div class="cit-nav" id="cit-nav"></div>
+    </div>
+    <span class="section-label">Mon affirmation du jour</span>
+    <div class="aff-card">
+      <h4>Je me répète</h4>
+      <p id="affirmation-text"></p>
+    </div>
+    <span class="section-label">Mon intention du jour</span>
+    <div class="intent-card">
+      <h4>Aujourd'hui je veux...</h4>
+      <input class="intent-input" id="intent1" placeholder="Écrire ici..." />
+      <input class="intent-input" id="intent2" placeholder="Et aussi..." />
+    </div>
+    <span class="section-label">Mes 3 gratitudes du soir</span>
+    <div class="grat-card">
+      <h4>Je suis reconnaissante pour...</h4>
+      <div class="grat-item"><div class="grat-num">1</div><input class="grat-input" id="grat1" placeholder="Écrire ici..."/></div>
+      <div class="grat-item"><div class="grat-num">2</div><input class="grat-input" id="grat2" placeholder="Écrire ici..."/></div>
+      <div class="grat-item"><div class="grat-num">3</div><input class="grat-input" id="grat3" placeholder="Écrire ici..."/></div>
+    </div>
+    <span class="section-label">Mon humeur du soir</span>
+    <div class="mood-card">
+      <h4>Comment je me sens ?</h4>
+      <div class="moods">
+        <button class="mood-btn" onclick="selectMood(this, '😔', 'Difficile')"><span>😔</span><p>Difficile</p></button>
+        <button class="mood-btn" onclick="selectMood(this, '😐', 'Moyen')"><span>😐</span><p>Moyen</p></button>
+        <button class="mood-btn" onclick="selectMood(this, '🙂', 'Bien')"><span>🙂</span><p>Bien</p></button>
+        <button class="mood-btn" onclick="selectMood(this, '😊', 'Super')"><span>😊</span><p>Super</p></button>
+        <button class="mood-btn" onclick="selectMood(this, '🌟', 'Parfait')"><span>🌟</span><p>Parfait</p></button>
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveMemos()">Sauvegarder ma journée</button>
+  </div>
+</div>
+
+<!-- ===== ÉCRAN POUR MOI ===== -->
+<div class="screen" id="screen-pourmoi">
+  <div class="screen-header green">
+    <h1>Mon temps à moi</h1>
+    <p>Parce que tu le mérites vraiment</p>
+  </div>
+  <div class="content">
+    <div class="streak-card">
+      <div class="str-num" id="streak-num">0</div>
+      <p id="streak-msg"><strong>jours de suite</strong><br>à prendre du temps pour toi 🌿</p>
+    </div>
+
+    <!-- MES ACTIVITÉS DU JOUR -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="section-label" style="margin:0;">Mes activités du jour</span>
+      <button onclick="openSelfModal()" style="background:#697259; color:white; border:none; border-radius:20px; padding:5px 12px; font-family:'Jost',sans-serif; font-size:11px; cursor:pointer;">+ Ajouter</button>
+    </div>
+    <div id="self-today-list" style="margin-top:8px; margin-bottom:4px;"></div>
+
+    <span class="section-label">Catégories</span>
+    <div class="selfcats">
+      <button class="scat t" onclick="filterSuggestions('soins')"><span>🛁</span><h4>Soins & Beauté</h4><p>Bain · Masque · Soin</p></button>
+      <button class="scat g" onclick="filterSuggestions('mouvement')"><span>🚶</span><h4>Mouvement</h4><p>Marche · Yoga · Sport</p></button>
+      <button class="scat p" onclick="filterSuggestions('apprentissage')"><span>📚</span><h4>Apprentissage</h4><p>Lecture · Podcast</p></button>
+      <button class="scat tp" onclick="filterSuggestions('social')"><span>👭</span><h4>Social</h4><p>Amies · Sorties</p></button>
+      <button class="scat" style="background:linear-gradient(135deg,#8B6914,#C49A30); grid-column:1/-1;" onclick="filterSuggestions('enfants')"><span>🧸</span><h4>Activités Enfants</h4><p>Jeux · Sorties · Créativité · Apprentissage</p></button>
+    </div>
+    <span class="section-label" id="suggestions-label">Suggestions du jour</span>
+    <p style="font-size:10px; color:#A89B82; margin-bottom:8px;">Appuie sur une suggestion pour l'ajouter à ta journée ✨</p>
+    <div id="suggestions-list"></div>
+  </div>
+</div>
+
+<!-- ===== ÉCRAN PLANNING ===== -->
+<div class="screen" id="screen-planning">
+  <div class="screen-header" style="background:#2F352B;">
+    <h1>Mon planning</h1>
+    <p>Organise ta semaine à ton rythme</p>
+  </div>
+  <div class="content">
+    <!-- SEMAINE STRIP -->
+    <div id="week-strip" style="display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:4px;"></div>
+
+    <!-- JOUR SÉLECTIONNÉ -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <span class="section-label" style="margin:0;" id="planning-day-label">Lundi</span>
+      <button onclick="openPlanningModal()" style="background:#C47A5A; color:white; border:none; border-radius:20px; padding:6px 14px; font-family:'Jost',sans-serif; font-size:11px; cursor:pointer;">+ Ajouter</button>
+    </div>
+
+    <!-- CRÉNEAUX HORAIRES -->
+    <div id="planning-slots"></div>
+
+    <!-- NOTES DU JOUR -->
+    <span class="section-label">Note du jour</span>
+    <div class="card">
+      <textarea id="planning-note" placeholder="Notes, rappels, liste de courses..." style="width:100%; border:none; background:transparent; font-family:'Jost',sans-serif; font-size:13px; color:#2F352B; resize:none; outline:none; min-height:70px; line-height:1.6;"></textarea>
+      <button onclick="savePlanningNote()" style="background:#697259; color:white; border:none; border-radius:8px; padding:8px 16px; font-family:'Jost',sans-serif; font-size:11px; cursor:pointer; margin-top:6px;">Sauvegarder la note</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="showScreen('home', this)"><span class="nav-icon">🏠</span><p>Accueil</p></button>
+  <button class="nav-btn" onclick="showScreen('planning', this)"><span class="nav-icon">📅</span><p>Planning</p></button>
+  <button class="nav-btn" onclick="showScreen('routines', this)"><span class="nav-icon">🌿</span><p>Routines</p></button>
+  <button class="nav-btn" onclick="showScreen('memos', this)"><span class="nav-icon">💛</span><p>Mémos</p></button>
+  <button class="nav-btn" onclick="showScreen('pourmoi', this)"><span class="nav-icon">🌸</span><p>Pour moi</p></button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL ADD TASK -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>Ajouter une tâche</h3>
+    <input type="text" id="new-task-input" placeholder="Ex: Préparer les cartables..." style="margin-bottom:8px; width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:12px 14px; font-family:'Jost',sans-serif; font-size:14px; outline:none;" />
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+      <div>
+        <label style="font-size:10px; color:#A89B82; display:block; margin-bottom:4px;">Durée</label>
+        <select id="new-task-duration" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:10px; font-family:'Jost',sans-serif; font-size:13px; color:#2F352B; outline:none;">
+          <option>30 sec</option><option>1 min</option><option>2 min</option><option>3 min</option>
+          <option>5 min</option><option selected>10 min</option><option>15 min</option>
+          <option>20 min</option><option>30 min</option><option>45 min</option><option>1h</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px; color:#A89B82; display:block; margin-bottom:4px;">Catégorie</label>
+        <select id="new-task-cat" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:10px; font-family:'Jost',sans-serif; font-size:13px; color:#2F352B; outline:none;">
+          <option value="Maison">🏠 Maison</option>
+          <option value="Cuisine">🍽️ Cuisine</option>
+          <option value="Linge">👗 Linge</option>
+          <option value="Famille">👨‍👩‍👧 Famille</option>
+          <option value="Bien-être">🌸 Bien-être</option>
+          <option value="Perso">✦ Autre</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-add" onclick="addCustomTask()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SELF ACTIVITY -->
+<div class="modal-overlay" id="self-modal">
+  <div class="modal">
+    <h3>Ajouter une activité</h3>
+    <input type="text" id="self-title" placeholder="Ex: Bain relaxant, Yoga..." style="margin-bottom:8px; width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:12px 14px; font-family:'Jost',sans-serif; font-size:14px; outline:none;" />
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+      <div>
+        <label style="font-size:10px; color:#A89B82; display:block; margin-bottom:4px;">Durée</label>
+        <select id="self-duration" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:10px; font-family:'Jost',sans-serif; font-size:13px; color:#2F352B; outline:none;">
+          <option>10 min</option><option>15 min</option><option selected>20 min</option>
+          <option>30 min</option><option>45 min</option><option>1h</option><option>1h30</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px; color:#A89B82; display:block; margin-bottom:4px;">Catégorie</label>
+        <select id="self-cat" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:10px; font-family:'Jost',sans-serif; font-size:13px; color:#2F352B; outline:none;">
+          <option value="🛁">🛁 Soins</option>
+          <option value="🚶">🚶 Mouvement</option>
+          <option value="📚">📚 Lecture</option>
+          <option value="👭">👭 Social</option>
+          <option value="🧸">🧸 Enfants</option>
+          <option value="🌿">🌿 Autre</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSelfModal()">Annuler</button>
+      <button class="btn-add" onclick="addSelfActivity()">Ajouter</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="planning-modal">
+  <div class="modal">
+    <h3>Ajouter un événement</h3>
+    <input type="text" id="planning-title" placeholder="Ex: Travail, Médecin, École..." style="margin-bottom:8px; width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:12px 14px; font-family:'Jost',sans-serif; font-size:14px; outline:none;" />
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+      <div>
+        <label style="font-size:10px; color:#A89B82; display:block; margin-bottom:4px;">Heure début</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+          <select id="planning-start-h" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:9px 4px; font-family:'Jost',sans-serif; font-size:12px; color:#2F352B; outline:none;">
+            <option>6h</option><option>7h</option><option selected>8h</option><option>9h</option>
+            <option>10h</option><option>11h</option><option>12h</option><option>13h</option>
+            <option>14h</option><option>15h</option><option>16h</option><option>17h</option>
+            <option>18h</option><option>19h</option><option>20h</option><option>21h</option>
+          </select>
+          <select id="planning-start-m" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:9px 4px; font-family:'Jost',sans-serif; font-size:12px; color:#2F352B; outline:none;">
+            <option value="00">00</option><option value="05">05</option><option value="10">10</option>
+            <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+            <option value="30">30</option><option value="35">35</option><option value="40">40</option>
+            <option value="45">45</option><option value="50">50</option><option value="55">55</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px; color:#A89B82; display:block; margin-bottom:4px;">Heure fin</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+          <select id="planning-end-h" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:9px 4px; font-family:'Jost',sans-serif; font-size:12px; color:#2F352B; outline:none;">
+            <option>6h</option><option>7h</option><option>8h</option><option>9h</option>
+            <option>10h</option><option>11h</option><option>12h</option><option>13h</option>
+            <option>14h</option><option>15h</option><option>16h</option><option>17h</option>
+            <option>18h</option><option>19h</option><option>20h</option><option>21h</option><option selected>17h</option>
+          </select>
+          <select id="planning-end-m" style="width:100%; border:1.5px solid #EDE8E0; border-radius:10px; padding:9px 4px; font-family:'Jost',sans-serif; font-size:12px; color:#2F352B; outline:none;">
+            <option value="00">00</option><option value="05">05</option><option value="10">10</option>
+            <option value="15">15</option><option value="20">20</option><option value="25">25</option>
+            <option value="30">30</option><option value="35">35</option><option value="40">40</option>
+            <option value="45">45</option><option value="50">50</option><option value="55">55</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:10px; color:#A89B82; display:block; margin-bottom:6px;">Catégorie</label>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;" id="event-cats">
+        <button class="ecat active" data-cat="travail" onclick="selectCat(this)" style="padding:6px 12px; border-radius:16px; border:none; background:#2F352B; color:white; font-size:11px; font-family:'Jost',sans-serif; cursor:pointer;">💼 Travail</button>
+        <button class="ecat" data-cat="famille" onclick="selectCat(this)" style="padding:6px 12px; border-radius:16px; border:1.5px solid #EDE8E0; background:white; color:#444; font-size:11px; font-family:'Jost',sans-serif; cursor:pointer;">👨‍👩‍👧 Famille</button>
+        <button class="ecat" data-cat="sante" onclick="selectCat(this)" style="padding:6px 12px; border-radius:16px; border:1.5px solid #EDE8E0; background:white; color:#444; font-size:11px; font-family:'Jost',sans-serif; cursor:pointer;">🏥 Santé</button>
+        <button class="ecat" data-cat="ecole" onclick="selectCat(this)" style="padding:6px 12px; border-radius:16px; border:1.5px solid #EDE8E0; background:white; color:#444; font-size:11px; font-family:'Jost',sans-serif; cursor:pointer;">🎒 École</button>
+        <button class="ecat" data-cat="maison" onclick="selectCat(this)" style="padding:6px 12px; border-radius:16px; border:1.5px solid #EDE8E0; background:white; color:#444; font-size:11px; font-family:'Jost',sans-serif; cursor:pointer;">🏠 Maison</button>
+        <button class="ecat" data-cat="moi" onclick="selectCat(this)" style="padding:6px 12px; border-radius:16px; border:1.5px solid #EDE8E0; background:white; color:#444; font-size:11px; font-family:'Jost',sans-serif; cursor:pointer;">🌸 Pour moi</button>
+        <button class="ecat" data-cat="autre" onclick="selectCat(this)" style="padding:6px 12px; border-radius:16px; border:1.5px solid #EDE8E0; background:white; color:#444; font-size:11px; font-family:'Jost',sans-serif; cursor:pointer;">✦ Autre</button>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closePlanningModal()">Annuler</button>
+      <button class="btn-add" onclick="addPlanningEvent()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const citations = [
+  "Tu n'as pas besoin d'être parfaite. Tu as juste besoin de continuer.",
+  "Tu n'as pas besoin d'une maison parfaite. Tu as juste besoin d'un espace qui te ressemble.",
+  "Prends soin de toi d'abord. Tu seras une meilleure maman, une meilleure version de toi.",
+  "Chaque petit pas compte. Même les jours où tu avances lentement.",
+  "Tu portes beaucoup. N'oublie pas de poser le poids parfois — et de respirer.",
+  "La légèreté commence par un seul geste. Commence maintenant.",
+  "Tu fais de ton mieux. Et ton mieux est toujours suffisant.",
+  "Une maison apaisée commence par une maman apaisée.",
+];
+
+const affirmations = [
+  "Je suis capable de prendre soin de ma maison et de moi-même.",
+  "Je mérite un espace qui me ressemble et me fait du bien.",
+  "Chaque jour je progresse, à mon rythme, avec bienveillance.",
+  "Je suis une maman extraordinaire qui fait de son mieux.",
+  "Je choisis la légèreté. Je lâche ce qui ne me ressemble plus.",
+  "Mon bien-être est une priorité, pas un luxe.",
+  "Je suis fière du chemin parcouru, même quand c'est difficile.",
+];
+
+const routinesData = {
+  matin: [
+    { id: 'm1', text: 'Faire son lit', time: '2 min', cat: 'Chambre' },
+    { id: 'm2', text: 'Ouvrir les volets', time: '30 sec', cat: 'Maison' },
+    { id: 'm3', text: 'Plan de travail dégagé', time: '1 min', cat: 'Cuisine' },
+    { id: 'm4', text: 'Machine lancée', time: '1 min', cat: 'Linge' },
+    { id: 'm5', text: 'Sac enfants vérifié', time: '2 min', cat: 'Famille' },
+  ],
+  soir: [
+    { id: 's1', text: 'Tour rapide de la maison', time: '3 min', cat: 'Maison' },
+    { id: 's2', text: 'Chaque chose à sa place', time: '5 min', cat: 'Rangement' },
+    { id: 's3', text: 'Linge sorti et plié', time: '5 min', cat: 'Linge' },
+    { id: 's4', text: 'Sac d\'école préparé', time: '2 min', cat: 'Famille' },
+    { id: 's5', text: 'Cuisine rangée', time: '3 min', cat: 'Cuisine' },
+  ],
+  weekend: [
+    { id: 'w1', text: 'Une zone à entretenir', time: '15 min', cat: 'Maison' },
+    { id: 'w2', text: 'Tri rapide si accumulation', time: '10 min', cat: 'Rangement' },
+    { id: 'w3', text: 'Repassage si nécessaire', time: '20 min', cat: 'Linge' },
+    { id: 'w4', text: 'Mon moment à moi', time: '30 min', cat: 'Bien-être' },
+  ]
+};
+
+const suggestions = {
+  soins: [
+    { icon: '🛁', cat: 'o', title: 'Bain relaxant', desc: 'Sels de bain · Bougie · Silence', dur: '20 min' },
+    { icon: '💆', cat: 'o', title: 'Masque visage', desc: 'Soin · Hydratation', dur: '15 min' },
+    { icon: '💅', cat: 'o', title: 'Nail care', desc: 'Prendre soin de soi', dur: '20 min' },
+  ],
+  mouvement: [
+    { icon: '🧘', cat: 'g', title: 'Méditation guidée', desc: 'Calme · Respiration', dur: '10 min' },
+    { icon: '🚶', cat: 'g', title: 'Promenade nature', desc: 'Air frais · Déconnexion', dur: '30 min' },
+    { icon: '🧗', cat: 'g', title: 'Yoga doux', desc: 'Étirements · Bien-être', dur: '20 min' },
+  ],
+  apprentissage: [
+    { icon: '📚', cat: 'p', title: 'Lecture', desc: 'Roman · Développement perso', dur: '15 min' },
+    { icon: '🎧', cat: 'p', title: 'Podcast inspirant', desc: 'Écouter en faisant autre chose', dur: '20 min' },
+    { icon: '🎨', cat: 'p', title: 'Créativité', desc: 'Dessin · Tricot · DIY', dur: '30 min' },
+  ],
+  social: [
+    { icon: '📞', cat: 'b', title: 'Appel d\'une amie', desc: 'Rire · Partager · Se ressourcer', dur: '20 min' },
+    { icon: '☕', cat: 'b', title: 'Café en terrasse', desc: 'Pause · Air frais · Social', dur: '45 min' },
+    { icon: '🎵', cat: 'b', title: 'Musique & danse', desc: 'Joie · Défoulement · Légèreté', dur: '15 min' },
+  ],
+  enfants: [
+    { icon: '🎨', cat: 'e', title: 'Atelier dessin / peinture', desc: 'Créativité · Calme · Concentration', dur: '30 min' },
+    { icon: '🧩', cat: 'e', title: 'Puzzle ensemble', desc: 'Logique · Patience · Partage', dur: '20 min' },
+    { icon: '📖', cat: 'e', title: 'Lecture à voix haute', desc: 'Vocabulaire · Imaginaire · Câlins', dur: '15 min' },
+    { icon: '🌳', cat: 'e', title: 'Sortie au parc', desc: 'Air frais · Jeux libres · Nature', dur: '1h' },
+    { icon: '🍪', cat: 'e', title: 'Cuisine ensemble', desc: 'Biscuits · Crêpes · Apprentissage', dur: '45 min' },
+    { icon: '🎭', cat: 'e', title: 'Jeu de rôle / déguisements', desc: 'Imaginaire · Rires · Créativité', dur: '30 min' },
+    { icon: '🎲', cat: 'e', title: 'Jeu de société', desc: 'Règles · Stratégie · Famille', dur: '30 min' },
+    { icon: '🚴', cat: 'e', title: 'Vélo ou trottinette', desc: 'Motricité · Sport · Plein air', dur: '45 min' },
+    { icon: '🌱', cat: 'e', title: 'Jardinage avec les enfants', desc: 'Nature · Responsabilité · Patience', dur: '30 min' },
+    { icon: '🎬', cat: 'e', title: 'Film en famille', desc: 'Moment cocooning · Popcorn · Câlins', dur: '1h30' },
+    { icon: '🔤', cat: 'e', title: 'Jeux éducatifs', desc: 'Lettres · Chiffres · Apprentissage', dur: '20 min' },
+    { icon: '🏊', cat: 'e', title: 'Piscine municipale', desc: 'Sport · Eau · Plaisir', dur: '1h' },
+    { icon: '🎤', cat: 'e', title: 'Karaoké maison', desc: 'Chansons · Rires · Bonne humeur', dur: '20 min' },
+    { icon: '🧁', cat: 'e', title: 'Atelier pâtisserie', desc: 'Créativité · Partage · Gourmandise', dur: '1h' },
+  ],
+  all: []
+};
+suggestions.all = [...suggestions.soins, ...suggestions.mouvement, ...suggestions.apprentissage, ...suggestions.social];
+
+// ===== STATE =====
+let currentRoutine = 'matin';
+let checkedTasks = JSON.parse(localStorage.getItem('kasi_tasks') || '{}');
+let selectedMood = '';
+let streakCount = parseInt(localStorage.getItem('kasi_streak') || '0');
+let currentCitationIndex = 0;
+
+// ===== INIT =====
+function init() {
+  // Date
+  const now = new Date();
+  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  document.getElementById('home-date').textContent = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+
+  // Citation du jour
+  const citIndex = now.getDate() % citations.length;
+  document.getElementById('home-citation').textContent = citations[citIndex];
+  document.getElementById('memo-citation').textContent = citations[citIndex];
+
+  // Affirmation
+  const affIndex = now.getDate() % affirmations.length;
+  document.getElementById('affirmation-text').textContent = affirmations[affIndex];
+
+  // Load saved memos
+  const saved = JSON.parse(localStorage.getItem('kasi_memos') || '{}');
+  if (saved.intent1) document.getElementById('intent1').value = saved.intent1;
+  if (saved.intent2) document.getElementById('intent2').value = saved.intent2;
+  if (saved.grat1) document.getElementById('grat1').value = saved.grat1;
+  if (saved.grat2) document.getElementById('grat2').value = saved.grat2;
+  if (saved.grat3) document.getElementById('grat3').value = saved.grat3;
+
+  // Streak
+  document.getElementById('streak-num').textContent = streakCount;
+
+  // Render
+  renderHomeTasks();
+  renderRoutineTasks();
+  renderSuggestions('all');
+  buildCitNav();
+}
+
+// ===== SCREENS =====
+function showScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ===== HOME TASKS =====
+function renderHomeTasks() {
+  const tasks = routinesData[currentRoutine];
+  const total = tasks.length;
+  const done = tasks.filter(t => checkedTasks[t.id]).length;
+  document.getElementById('home-badge').textContent = `${total - done} tâches restantes aujourd'hui`;
+
+  const container = document.getElementById('home-tasks');
+  container.innerHTML = tasks.slice(0, 3).map(t => `
+    <div class="task-item" onclick="toggleTask('${t.id}', this)">
+      <div class="task-cb ${checkedTasks[t.id] ? 'done' : ''}"></div>
+      <div class="task-info">
+        <p class="${checkedTasks[t.id] ? 'done' : ''}">${t.text}</p>
+        <span>${t.cat}</span>
+      </div>
+      <span class="task-cat">${t.time}</span>
+    </div>
+  `).join('');
+}
+
+// ===== ROUTINE TASKS =====
+function renderRoutineTasks() {
+  // Merge default tasks with custom, minus deleted ones
+  const deleted = JSON.parse(localStorage.getItem('kasi_deleted_' + currentRoutine) || '[]');
+  const customs = JSON.parse(localStorage.getItem('kasi_custom_' + currentRoutine) || '[]');
+  const defaultTasks = routinesData[currentRoutine].filter(t => !deleted.includes(t.id));
+  const tasks = [...defaultTasks, ...customs];
+
+  const done = tasks.filter(t => checkedTasks[t.id]).length;
+  const total = tasks.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${done}/${total}`;
+  document.getElementById('score-num').textContent = pct + '%';
+  document.getElementById('score-msg').innerHTML = pct === 100 ? 'Routine complète ! <strong>Bravo !</strong> 🎉' : pct >= 60 ? 'Continue comme ça ! <strong>Tu y es presque</strong>' : 'Commence ta routine <strong>à ton rythme</strong>';
+
+  const container = document.getElementById('routine-tasks');
+  container.innerHTML = tasks.map(t => `
+    <div class="task-item" style="position:relative;">
+      <div onclick="toggleTask('${t.id}', this.parentElement)" style="display:flex; align-items:center; gap:12px; flex:1; cursor:pointer;">
+        <div class="task-cb ${checkedTasks[t.id] ? 'done' : ''}"></div>
+        <div class="task-info">
+          <p class="${checkedTasks[t.id] ? 'done' : ''}">${t.text}</p>
+          <span>${t.cat}</span>
+        </div>
+        <span class="task-cat">${t.time}</span>
+      </div>
+      <button onclick="deleteRoutineTask('${t.id}', ${t.id.startsWith('c_') || t.id.startsWith('m') || t.id.startsWith('s') || t.id.startsWith('w') ? `'default'` : `'custom'`})" style="background:none; border:none; font-size:16px; color:#C8BFB2; cursor:pointer; padding:4px 6px; flex-shrink:0;" title="Supprimer">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteRoutineTask(id, type) {
+  // Check if it's a default or custom task
+  const isDefault = routinesData[currentRoutine].some(t => t.id === id);
+  if (isDefault) {
+    // Add to deleted list
+    const deleted = JSON.parse(localStorage.getItem('kasi_deleted_' + currentRoutine) || '[]');
+    if (!deleted.includes(id)) deleted.push(id);
+    localStorage.setItem('kasi_deleted_' + currentRoutine, JSON.stringify(deleted));
+  } else {
+    // Remove from custom list
+    const customs = JSON.parse(localStorage.getItem('kasi_custom_' + currentRoutine) || '[]');
+    localStorage.setItem('kasi_custom_' + currentRoutine, JSON.stringify(customs.filter(t => t.id !== id)));
+  }
+  delete checkedTasks[id];
+  localStorage.setItem('kasi_tasks', JSON.stringify(checkedTasks));
+  renderRoutineTasks();
+  renderHomeTasks();
+  showToast('Tâche supprimée 🌿');
+}
+
+function resetRoutine() {
+  // Reset deleted tasks for current routine
+  localStorage.removeItem('kasi_deleted_' + currentRoutine);
+  localStorage.removeItem('kasi_custom_' + currentRoutine);
+  renderRoutineTasks();
+  showToast('Routine réinitialisée 🌿');
+}
+
+function toggleTask(id, el) {
+  checkedTasks[id] = !checkedTasks[id];
+  localStorage.setItem('kasi_tasks', JSON.stringify(checkedTasks));
+  const cb = el.querySelector('.task-cb');
+  const txt = el.querySelector('.task-info p');
+  if (cb) cb.classList.toggle('done');
+  if (txt) txt.classList.toggle('done');
+  renderRoutineTasks();
+  renderHomeTasks();
+  if (checkedTasks[id]) {
+    showToast('Tâche accomplie ! 🌿');
+    syncRoutineToPlanning();
+  }
+}
+
+// ===== SYNC ROUTINES → PLANNING =====
+function syncRoutineToPlanning() {
+  const now = new Date();
+  const dayKey = now.toDateString();
+  if (!planningEvents[dayKey]) planningEvents[dayKey] = [];
+
+  const matinTasks = [...routinesData.matin, ...(JSON.parse(localStorage.getItem('kasi_custom_matin') || '[]'))];
+  const soirTasks = [...routinesData.soir, ...(JSON.parse(localStorage.getItem('kasi_custom_soir') || '[]'))];
+
+  const matinDone = matinTasks.filter(t => checkedTasks[t.id]).length;
+  const matinTotal = matinTasks.length;
+  const soirDone = soirTasks.filter(t => checkedTasks[t.id]).length;
+  const soirTotal = soirTasks.length;
+
+  // Remove old routine sync blocks
+  planningEvents[dayKey] = planningEvents[dayKey].filter(e => !e.isRoutineSync);
+
+  // Add matin block if started
+  if (matinDone > 0) {
+    planningEvents[dayKey].push({
+      id: 'sync_matin',
+      isRoutineSync: true,
+      title: `Routine matin — ${matinDone}/${matinTotal} tâches`,
+      start: '7h00', end: '7h30',
+      startH: 7,
+      cat: matinDone === matinTotal ? 'famille' : 'maison',
+      done: matinDone === matinTotal
+    });
+  }
+
+  // Add soir block if started
+  if (soirDone > 0) {
+    planningEvents[dayKey].push({
+      id: 'sync_soir',
+      isRoutineSync: true,
+      title: `Routine soir — ${soirDone}/${soirTotal} tâches`,
+      start: '20h00', end: '20h30',
+      startH: 20,
+      cat: soirDone === soirTotal ? 'famille' : 'maison',
+      done: soirDone === soirTotal
+    });
+  }
+
+  localStorage.setItem('kasi_planning', JSON.stringify(planningEvents));
+  renderPlanningSlots();
+  renderWeekStrip();
+  checkWorkReminder();
+}
+
+// ===== WORK REMINDER ON HOME =====
+function checkWorkReminder() {
+  const now = new Date();
+  const dayKey = now.toDateString();
+  const todayEvents = planningEvents[dayKey] || [];
+  const hasWork = todayEvents.some(e => e.cat === 'travail');
+  const reminder = document.getElementById('work-reminder');
+  if (reminder) {
+    if (hasWork) {
+      const workEvent = todayEvents.find(e => e.cat === 'travail');
+      reminder.style.display = 'block';
+      reminder.innerHTML = `
+        <div style="background:rgba(47,53,43,0.08); border-left:3px solid #2F352B; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:8px;">
+          <p style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#2F352B; margin-bottom:3px;">💼 Tu travailles aujourd'hui</p>
+          <p style="font-size:12px; color:#555;">${workEvent.title} · ${workEvent.start} → ${workEvent.end}</p>
+          <p style="font-size:11px; color:#697259; margin-top:3px;">Pense à ta routine soir en rentrant 🌿</p>
+        </div>`;
+    } else {
+      reminder.style.display = 'none';
+    }
+  }
+}
+
+function switchRoutine(name, btn) {
+  currentRoutine = name;
+  document.querySelectorAll('.r-tab').forEach(t => { t.classList.remove('active'); t.classList.add('inactive'); });
+  btn.classList.add('active'); btn.classList.remove('inactive');
+  renderRoutineTasks();
+}
+
+// ===== ADD TASK =====
+function openAddTask() {
+  document.getElementById('modal-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('new-task-input').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+  document.getElementById('new-task-input').value = '';
+}
+function addCustomTask() {
+  const val = document.getElementById('new-task-input').value.trim();
+  if (!val) { showToast('Ajoute un titre !'); return; }
+  const duration = document.getElementById('new-task-duration').value;
+  const cat = document.getElementById('new-task-cat').value;
+  const key = 'kasi_custom_' + currentRoutine;
+  const customs = JSON.parse(localStorage.getItem(key) || '[]');
+  const newTask = { id: 'c_' + Date.now(), text: val, time: duration, cat };
+  customs.push(newTask);
+  localStorage.setItem(key, JSON.stringify(customs));
+  closeModal();
+  renderRoutineTasks();
+  showToast('Tâche ajoutée ! 🌿');
+}
+
+// ===== MÉMOS =====
+function selectMood(btn, emoji, label) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedMood = emoji + ' ' + label;
+}
+function saveMemos() {
+  const data = {
+    intent1: document.getElementById('intent1').value,
+    intent2: document.getElementById('intent2').value,
+    grat1: document.getElementById('grat1').value,
+    grat2: document.getElementById('grat2').value,
+    grat3: document.getElementById('grat3').value,
+    mood: selectedMood,
+    date: new Date().toDateString()
+  };
+  localStorage.setItem('kasi_memos', JSON.stringify(data));
+  // Update streak
+  const lastSave = localStorage.getItem('kasi_last_save');
+  const today = new Date().toDateString();
+  if (lastSave !== today) {
+    streakCount++;
+    localStorage.setItem('kasi_streak', streakCount);
+    localStorage.setItem('kasi_last_save', today);
+    document.getElementById('streak-num').textContent = streakCount;
+  }
+  showToast('Journée sauvegardée ! 💛');
+}
+
+// ===== CITATIONS =====
+function buildCitNav() {
+  const nav = document.getElementById('cit-nav');
+  nav.innerHTML = citations.map((_, i) => `<div class="cit-dot ${i === 0 ? 'active' : ''}" onclick="changeCitation(${i})"></div>`).join('');
+}
+function changeCitation(i) {
+  currentCitationIndex = i;
+  document.getElementById('memo-citation').textContent = citations[i];
+  document.querySelectorAll('.cit-dot').forEach((d, idx) => { d.classList.toggle('active', idx === i); });
+}
+
+// ===== SUGGESTIONS =====
+function renderSuggestions(cat) {
+  const now = new Date();
+  const dayIndex = now.getDay();
+  const list = suggestions[cat] || suggestions.all;
+  const rotated = [...list.slice(dayIndex % list.length), ...list.slice(0, dayIndex % list.length)];
+  const display = rotated.slice(0, cat === 'enfants' ? 5 : 3);
+  const iconBg = { 'o': '#FAEAE0', 'g': '#E8F0E0', 'p': '#EDE8F5', 'b': '#E0EAF8', 'e': '#FDF3E0' };
+  document.getElementById('suggestions-list').innerHTML = display.map(s => `
+    <div class="sug-item" onclick="addSuggestionToDay('${s.title.replace(/'/g,"\\'")}', '${s.dur}', '${s.icon}')" style="cursor:pointer; transition:all 0.2s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'">
+      <div class="sug-icon" style="background:${iconBg[s.cat] || '#F6F3EE'}">${s.icon}</div>
+      <div><h4>${s.title}</h4><p>${s.desc}</p></div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+        <span class="sug-dur">${s.dur}</span>
+        <span style="font-size:9px; color:#C47A5A;">+ Ajouter</span>
+      </div>
+    </div>
+  `).join('');
+}
+function filterSuggestions(cat) {
+  const labels = { soins: 'Soins & Beauté', mouvement: 'Mouvement', apprentissage: 'Apprentissage', social: 'Social', enfants: 'Activités Enfants', all: 'Suggestions du jour' };
+  document.getElementById('suggestions-label').textContent = labels[cat] || 'Suggestions';
+  renderSuggestions(cat);
+  showToast(labels[cat] + ' 🌿');
+}
+
+// ===== ACTIVITÉS POUR MOI =====
+let selfActivities = JSON.parse(localStorage.getItem('kasi_self_' + new Date().toDateString()) || '[]');
+let selfChecked = JSON.parse(localStorage.getItem('kasi_self_checked_' + new Date().toDateString()) || '{}');
+
+function renderSelfToday() {
+  const container = document.getElementById('self-today-list');
+  if (!container) return;
+  if (selfActivities.length === 0) {
+    container.innerHTML = `
+      <div style="background:#F6F3EE; border-radius:10px; padding:16px; text-align:center; margin-bottom:8px;">
+        <p style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:14px; color:#A89B82;">Aucune activité pour aujourd'hui.<br>Ajoutes-en une ou choisis dans les suggestions ✨</p>
+      </div>`;
+    return;
+  }
+  container.innerHTML = selfActivities.map(a => `
+    <div style="background:#F6F3EE; border-radius:10px; padding:12px 14px; margin-bottom:6px; display:flex; align-items:center; gap:10px;">
+      <div onclick="toggleSelf('${a.id}', this.parentElement)" style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;">
+        <div style="width:22px; height:22px; border:2px solid ${selfChecked[a.id] ? '#697259' : '#C8BFB2'}; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:${selfChecked[a.id] ? '#697259' : 'transparent'};">
+          ${selfChecked[a.id] ? '<span style="color:white;font-size:12px;">✓</span>' : ''}
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:13px; font-weight:600; color:${selfChecked[a.id] ? '#A89B82' : '#2F352B'}; ${selfChecked[a.id] ? 'text-decoration:line-through;' : ''}">${a.icon} ${a.title}</p>
+          <p style="font-size:10px; color:#A89B82;">${a.dur}</p>
+        </div>
+      </div>
+      <button onclick="deleteSelfActivity('${a.id}')" style="background:none; border:none; font-size:16px; color:#C8BFB2; cursor:pointer; padding:4px 0;">✕</button>
+    </div>
+  `).join('');
+}
+
+function toggleSelf(id, el) {
+  selfChecked[id] = !selfChecked[id];
+  localStorage.setItem('kasi_self_checked_' + new Date().toDateString(), JSON.stringify(selfChecked));
+  renderSelfToday();
+  if (selfChecked[id]) showToast('Activité accomplie ! 🌸');
+}
+
+function deleteSelfActivity(id) {
+  selfActivities = selfActivities.filter(a => a.id !== id);
+  localStorage.setItem('kasi_self_' + new Date().toDateString(), JSON.stringify(selfActivities));
+  renderSelfToday();
+  showToast('Activité supprimée');
+}
+
+function openSelfModal() {
+  document.getElementById('self-modal').classList.add('show');
+  setTimeout(() => document.getElementById('self-title').focus(), 100);
+}
+function closeSelfModal() {
+  document.getElementById('self-modal').classList.remove('show');
+  document.getElementById('self-title').value = '';
+}
+function addSelfActivity() {
+  const title = document.getElementById('self-title').value.trim();
+  if (!title) { showToast('Ajoute un titre !'); return; }
+  const dur = document.getElementById('self-duration').value;
+  const icon = document.getElementById('self-cat').value;
+  selfActivities.push({ id: 'sa_' + Date.now(), title, dur, icon });
+  localStorage.setItem('kasi_self_' + new Date().toDateString(), JSON.stringify(selfActivities));
+  closeSelfModal();
+  renderSelfToday();
+  showToast('Activité ajoutée ! 🌸');
+}
+function addSuggestionToDay(title, dur, icon) {
+  selfActivities.push({ id: 'sa_' + Date.now(), title, dur, icon });
+  localStorage.setItem('kasi_self_' + new Date().toDateString(), JSON.stringify(selfActivities));
+  renderSelfToday();
+  showToast(title + ' ajoutée ! 🌸');
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== PLANNING =====
+const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const dayShort = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+let selectedDay = new Date().getDay();
+let selectedCat = 'travail';
+let planningEvents = JSON.parse(localStorage.getItem('kasi_planning') || '{}');
+
+const catColors = {
+  travail: '#2F352B', famille: '#697259', sante: '#4A8A9A',
+  ecole: '#C47A5A', maison: '#A89B82', moi: '#5C4E7A', autre: '#888'
+};
+const catIcons = {
+  travail: '💼', famille: '👨‍👩‍👧', sante: '🏥',
+  ecole: '🎒', maison: '🏠', moi: '🌸', autre: '✦'
+};
+
+function renderWeekStrip() {
+  const now = new Date();
+  const strip = document.getElementById('week-strip');
+  strip.innerHTML = Array.from({length: 7}, (_, i) => {
+    const d = new Date(now);
+    d.setDate(now.getDate() - now.getDay() + i);
+    const isToday = d.toDateString() === now.toDateString();
+    const isSelected = i === selectedDay;
+    const dayKey = d.toDateString();
+    const hasEvents = planningEvents[dayKey] && planningEvents[dayKey].length > 0;
+    return `
+      <div onclick="selectDay(${i})" style="
+        flex-shrink:0; text-align:center; cursor:pointer;
+        background:${isSelected ? '#2F352B' : isToday ? '#F6F3EE' : 'transparent'};
+        border-radius:12px; padding:8px 10px; min-width:46px;
+        border:${isToday && !isSelected ? '1.5px solid #2F352B' : '1.5px solid transparent'};
+      ">
+        <p style="font-size:8px; color:${isSelected ? 'rgba(255,255,255,0.5)' : '#A89B82'}; margin-bottom:4px; letter-spacing:1px;">${dayShort[i]}</p>
+        <p style="font-size:14px; font-weight:600; color:${isSelected ? 'white' : '#2F352B'};">${d.getDate()}</p>
+        <div style="width:5px; height:5px; border-radius:50%; background:${hasEvents ? '#C47A5A' : 'transparent'}; margin:4px auto 0;"></div>
+      </div>`;
+  }).join('');
+}
+
+function selectDay(dayIndex) {
+  selectedDay = dayIndex;
+  renderWeekStrip();
+  renderPlanningSlots();
+  document.getElementById('planning-day-label').textContent = dayNames[dayIndex];
+  const now = new Date();
+  const d = new Date(now);
+  d.setDate(now.getDate() - now.getDay() + dayIndex);
+  const note = JSON.parse(localStorage.getItem('kasi_notes') || '{}');
+  document.getElementById('planning-note').value = note[d.toDateString()] || '';
+}
+
+function renderPlanningSlots() {
+  const now = new Date();
+  const d = new Date(now);
+  d.setDate(now.getDate() - now.getDay() + selectedDay);
+  const dayKey = d.toDateString();
+  const events = (planningEvents[dayKey] || []).sort((a, b) => a.startH - b.startH);
+  const hours = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+  const container = document.getElementById('planning-slots');
+
+  if (events.length === 0) {
+    container.innerHTML = `
+      <div style="background:#F6F3EE; border-radius:12px; padding:24px; text-align:center; margin-bottom:8px;">
+        <p style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:16px; color:#A89B82; line-height:1.6;">
+          Aucun événement ce jour.<br>Appuie sur "+ Ajouter" pour commencer.
+        </p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = events.map(ev => `
+    <div style="background:${ev.isRoutineSync ? (ev.done ? 'rgba(105,114,89,0.12)' : 'rgba(196,122,90,0.1)') : '#F6F3EE'}; border-radius:10px; padding:12px 14px; margin-bottom:6px; display:flex; gap:12px; align-items:center; border-left:4px solid ${ev.isRoutineSync ? (ev.done ? '#697259' : '#C47A5A') : (catColors[ev.cat] || '#888')};">
+      <div style="text-align:center; flex-shrink:0;">
+        <p style="font-size:11px; font-weight:600; color:${ev.isRoutineSync ? (ev.done ? '#697259' : '#C47A5A') : (catColors[ev.cat] || '#888')};">${ev.start}</p>
+        <p style="font-size:9px; color:#A89B82;">${ev.end}</p>
+      </div>
+      <div style="flex:1;">
+        <p style="font-size:13px; font-weight:600; color:#2F352B; margin-bottom:1px;">${ev.isRoutineSync ? (ev.done ? '✅' : '🔄') : catIcons[ev.cat]} ${ev.title}</p>
+        <p style="font-size:10px; color:#888;">${ev.isRoutineSync ? (ev.done ? 'Routine terminée 🌿' : 'En cours...') : ev.cat}</p>
+      </div>
+      ${ev.isRoutineSync ? '' : `<button onclick="deleteEvent('${dayKey}', ${ev.id})" style="background:none; border:none; font-size:16px; color:#C8BFB2; cursor:pointer; padding:4px;">✕</button>`}
+    </div>
+  `).join('');
+}
+
+function deleteEvent(dayKey, id) {
+  planningEvents[dayKey] = (planningEvents[dayKey] || []).filter(e => e.id !== id);
+  localStorage.setItem('kasi_planning', JSON.stringify(planningEvents));
+  renderPlanningSlots();
+  renderWeekStrip();
+  showToast('Événement supprimé');
+}
+
+function openPlanningModal() {
+  document.getElementById('planning-modal').classList.add('show');
+  setTimeout(() => document.getElementById('planning-title').focus(), 100);
+}
+function closePlanningModal() {
+  document.getElementById('planning-modal').classList.remove('show');
+  document.getElementById('planning-title').value = '';
+}
+
+function selectCat(btn) {
+  document.querySelectorAll('.ecat').forEach(b => {
+    b.style.background = 'white';
+    b.style.color = '#444';
+    b.style.border = '1.5px solid #EDE8E0';
+  });
+  btn.style.background = catColors[btn.dataset.cat] || '#2F352B';
+  btn.style.color = 'white';
+  btn.style.border = 'none';
+  selectedCat = btn.dataset.cat;
+}
+
+function addPlanningEvent() {
+  const title = document.getElementById('planning-title').value.trim();
+  if (!title) { showToast('Ajoute un titre !'); return; }
+  const startH = document.getElementById('planning-start-h').value;
+  const startM = document.getElementById('planning-start-m').value;
+  const endH = document.getElementById('planning-end-h').value;
+  const endM = document.getElementById('planning-end-m').value;
+  const start = `${startH}${startM !== '00' ? startM : ''}`;
+  const end = `${endH}${endM !== '00' ? endM : ''}`;
+  const startNum = parseInt(startH) + parseInt(startM) / 60;
+  const now = new Date();
+  const d = new Date(now);
+  d.setDate(now.getDate() - now.getDay() + selectedDay);
+  const dayKey = d.toDateString();
+  if (!planningEvents[dayKey]) planningEvents[dayKey] = [];
+  planningEvents[dayKey].push({
+    id: Date.now(), title,
+    start: `${startH}${startM !== '00' ? ':' + startM : ''}`,
+    end: `${endH}${endM !== '00' ? ':' + endM : ''}`,
+    startH: startNum, cat: selectedCat
+  });
+  localStorage.setItem('kasi_planning', JSON.stringify(planningEvents));
+  closePlanningModal();
+  renderPlanningSlots();
+  renderWeekStrip();
+  showToast('Événement ajouté ! 📅');
+}
+
+function savePlanningNote() {
+  const now = new Date();
+  const d = new Date(now);
+  d.setDate(now.getDate() - now.getDay() + selectedDay);
+  const notes = JSON.parse(localStorage.getItem('kasi_notes') || '{}');
+  notes[d.toDateString()] = document.getElementById('planning-note').value;
+  localStorage.setItem('kasi_notes', JSON.stringify(notes));
+  showToast('Note sauvegardée ! 🌿');
+}
+
+// ===== MODAL ENTER =====
+document.getElementById('new-task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addCustomTask(); });
+document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.getElementById('planning-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closePlanningModal(); });
+document.getElementById('self-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeSelfModal(); });
+
+init();
+renderSelfToday();
+
+// Init planning
+renderWeekStrip();
+renderPlanningSlots();
+selectDay(new Date().getDay());
+syncRoutineToPlanning();
+checkWorkReminder();
+</script>
+</body>
+</html>
